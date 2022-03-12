@@ -292,7 +292,7 @@ void loop()
   uint16_t minLvl, maxLvl;
   int n, height;
   // end mic
-  buttonPushCounter = EEPROM.read(0);
+  buttonPushCounter = EEPROM.read(1);
   // read the pushbutton input pin:
   buttonState = digitalRead(buttonPin);
   // compare the buttonState to its previous state
@@ -307,11 +307,11 @@ void loop()
       Serial.println("on");
       Serial.print("number of button pushes:  ");
       Serial.println(buttonPushCounter);
-      if (buttonPushCounter >= 19)
+      if (buttonPushCounter >= 27)
       {
         buttonPushCounter = 1;
       }
-      EEPROM.write(0, buttonPushCounter);
+      EEPROM.write(1, buttonPushCounter);
     }
     else
     {
@@ -335,117 +335,163 @@ void loop()
      case 1:
     buttonPushCounter == 1;
     {
-      Vu1(); // SEE
+      VuRojo(); // SEE
       break;
     }
-     case 2 :
+     case 2:
     buttonPushCounter == 2;
     {
-      Vu2(); // SEE
+      VuVerde(); // SEE
       break;
     }
-     case 3:
+
+    case 3:
     buttonPushCounter == 3;
     {
-      Vu3(); // SEE
+      VuAzul(); // SEE
       break;
     }
      case 4:
     buttonPushCounter == 4;
     {
-      Vu4(); // SEE
+      VuVioleta(); // SEE
       break;
     }
-     case 5:
+
+    case 5:
     buttonPushCounter == 5;
     {
-      Vu6(); // SEE
+      VuBlanco(); // SEE
       break;
     }
-     case 6:
+    
+    case 6:
     buttonPushCounter == 6;
     {
-      Vu8(); // SEE
+      VuAmarillo(); // SEE
       break;
     }
-     case 7:
+
+    case 7:
     buttonPushCounter == 7;
     {
-      Vu9(); // SEE
+      VuRosa(); // SEE
       break;
     }
-     case 8:
+    case 8:
     buttonPushCounter == 8;
     {
-      Vu10(); // SEE
+      Vu1(); // SEE
       break;
     }
-     case 9:
+     case 9 :
     buttonPushCounter == 9;
     {
-      Vu11(); // SEE
+      Vu2(); // SEE
       break;
     }
      case 10:
     buttonPushCounter == 10;
     {
-      Vu12(); // SEE
+      Vu3(); // SEE
       break;
     }
      case 11:
     buttonPushCounter == 11;
     {
-      Vu13(); // SEE
+      Vu4(); // SEE
       break;
     }
      case 12:
     buttonPushCounter == 12;
     {
-      ripple(); // SEE
+      Vu6(); // SEE
       break;
     }
      case 13:
     buttonPushCounter == 13;
     {
-      ripple2(); // SEE
+      Vu8(); // SEE
       break;
     }
      case 14:
     buttonPushCounter == 14;
     {
-      Twinkle(); // SEE
+      Vu9(); // SEE
       break;
     }
      case 15:
     buttonPushCounter == 15;
     {
-      pattern3(); // SEE
+      Vu10(); // SEE
       break;
     }
      case 16:
     buttonPushCounter == 16;
     {
+      Vu11(); // SEE
+      break;
+    }
+     case 17:
+    buttonPushCounter == 17;
+    {
+      Vu12(); // SEE
+      break;
+    }
+     case 18:
+    buttonPushCounter == 18;
+    {
+      Vu13(); // SEE
+      break;
+    }
+     case 19:
+    buttonPushCounter == 19;
+    {
+      ripple(); // SEE
+      break;
+    }
+     case 20:
+    buttonPushCounter == 20;
+    {
+      ripple2(); // SEE
+      break;
+    }
+     case 21:
+    buttonPushCounter == 21;
+    {
+      Twinkle(); // SEE
+      break;
+    }
+     case 22:
+    buttonPushCounter == 22;
+    {
+      pattern3(); // SEE
+      break;
+    }
+     case 23:
+    buttonPushCounter == 23;
+    {
       Balls(); // SEE
       break;
     }
 
-     case 17:
-    buttonPushCounter == 17;
+     case 24:
+    buttonPushCounter == 24;
     {
      rainbow(150);
       break;
     }
 
-     case 18:
-    buttonPushCounter == 18;
+     case 25:
+    buttonPushCounter == 25;
     {
      colorWipe(strip.Color(0, 0, 0), 10);
       break;
     }
 
 
-     case 19:
-    buttonPushCounter == 19;
+     case 26:
+    buttonPushCounter == 26;
     {
      one_color_allHSV(90, 69);
       break;
@@ -463,6 +509,727 @@ void loop()
 
   
 }
+
+//COLORES 
+
+void VuVerde() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelVerde(map(i, 0, N_PIXELS_HALF - 25, 25, 25));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelVerde(map(peak, 0, N_PIXELS_HALF - 25, 25, 25));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+void VuRojo() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i , 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelRojo(map(i, 0, N_PIXELS_HALF - 15, 15, 15));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelRojo(map(peak, 0, N_PIXELS_HALF - 0, 0, 0));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+void VuAzul() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i , 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelAzul(map(i, 0, N_PIXELS_HALF - 15, 15, 15));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelAzul(map(peak, 0, N_PIXELS_HALF - 0, 0, 0));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+void VuVioleta() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i , 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelVioleta(map(i, 0, N_PIXELS_HALF - 15, 15, 15));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelVioleta(map(peak, 0, N_PIXELS_HALF - 0, 0, 0));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+void VuBlanco() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i , 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelBlanco(map(i, 0, N_PIXELS_HALF - 15, 15, 15));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelBlanco(map(peak, 0, N_PIXELS_HALF - 0, 0, 0));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+
+void VuRosa() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i , 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelRosa(map(i, 0, N_PIXELS_HALF - 15, 15, 15));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelRosa(map(peak, 0, N_PIXELS_HALF - 0, 0, 0));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+void VuAmarillo() /// OK
+{
+
+  uint8_t i;
+  uint16_t minLvl, maxLvl;
+  int n, height;
+
+  //val = (analogRead(potPin));
+  //val= map(val, 0, 1023, -10, 6);
+  n = analogRead(MIC_PIN);            // Raw reading from mic
+  n = abs(n - 0 - DC_OFFSET);         // Center on zero
+  n = (n <= NOISE) ? 0 : (n - NOISE); // Remove noise/hum
+
+  /*
+      if(val<0){
+        n=n/(val*(-1));
+        }
+       if(val>0){
+        n=n*val;
+        }
+
+        */
+  lvl = ((lvl * 7) + n) >> 3; // "Dampened" reading (else looks twitchy)
+
+  // Calculate bar height based on dynamic min/max levels (fixed point):
+  height = TOP * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
+
+  if (height < 0L)
+    height = 0; // Clip output
+  else if (height > TOP)
+    height = TOP;
+  if (height > peak)
+    peak = height; // Keep 'peak' dot at top
+
+  // Color pixels based on rainbow gradient
+  for (i = 0; i < N_PIXELS_HALF; i++)
+  {
+    if (i >= height)
+    {
+      strip.setPixelColor(N_PIXELS_HALF - i , 0, 0, 0);
+      strip.setPixelColor(N_PIXELS_HALF + i, 0, 0, 0);
+    }
+    else
+    {
+      uint32_t color = WheelAmarillo(map(i, 0, N_PIXELS_HALF - 15, 15, 15));
+      strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
+      strip.setPixelColor(N_PIXELS_HALF + i, color);
+    }
+  }
+
+  // Draw peak dot
+  if (peak > 0 && peak <= N_PIXELS_HALF - 1)
+  {
+    uint32_t color = WheelAmarillo(map(peak, 0, N_PIXELS_HALF - 0, 0, 0));
+    strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
+    strip.setPixelColor(N_PIXELS_HALF + peak, color);
+  }
+
+  strip.show(); // Update strip
+
+  // Every few frames, make the peak pixel drop by 1:
+
+  if (++dotCount >= PEAK_FALL)
+  { //fall rate
+
+    if (peak > 0)
+      peak--;
+    dotCount = 0;
+  }
+
+  vol[volCount] = n; // Save sample for dynamic leveling
+  if (++volCount >= SAMPLES)
+    volCount = 0; // Advance/rollover sample counter
+
+  // Get volume range of prior frames
+  minLvl = maxLvl = vol[0];
+  for (i = 1; i < SAMPLES; i++)
+  {
+    if (vol[i] < minLvl)
+      minLvl = vol[i];
+    else if (vol[i] > maxLvl)
+      maxLvl = vol[i];
+  }
+  // minLvl and maxLvl indicate the volume range over prior frames, used
+  // for vertically scaling the output graph (so it looks interesting
+  // regardless of volume level).  If they're too close together though
+  // (e.g. at very low volume levels) the graph becomes super coarse
+  // and 'jumpy'...so keep some minimum distance between them (this
+  // also lets the graph go to zero when no sound is playing):
+  if ((maxLvl - minLvl) < TOP)
+    maxLvl = minLvl + TOP;
+  minLvlAvg = (minLvlAvg * 63 + minLvl) >> 6; // Dampen min/max levels
+  maxLvlAvg = (maxLvlAvg * 63 + maxLvl) >> 6; // (fake rolling average)
+}
+
+
+
+
+uint32_t WheelAzul(byte WheelPos)
+{
+    return strip.Color(0,0,255);
+    
+}
+
+uint32_t WheelRojo(byte WheelPos)
+{
+    return strip.Color(255,0,0);
+    
+}
+uint32_t WheelVerde(byte WheelPos)
+{
+    return strip.Color(0,255,0);
+    
+}
+
+uint32_t WheelBlanco(byte WheelPos)
+{
+    return strip.Color(250,250,255);
+    
+}
+
+uint32_t WheelVioleta(byte WheelPos)
+{
+    return strip.Color(125,0,255);
+    
+}
+
+uint32_t WheelRosa(byte WheelPos)
+{
+    return strip.Color(255,0,127);
+    
+}
+
+
+uint32_t WheelAmarillo(byte WheelPos)
+{
+    return strip.Color(255,255,00);
+    
+}
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////
 
 void Vu1() /// OK
 {
@@ -538,12 +1305,19 @@ void Vu1() /// OK
 
 // Input a value 0 to 255 to get a color value.
 // The colors are a transition r - g - b - back to r.
+
+
+
+
+
 uint32_t Wheel(byte WheelPos)
 {
+    
   if (WheelPos < 85)
   {
     return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
   }
+  
   else if (WheelPos < 170)
   {
     WheelPos -= 85;
@@ -554,6 +1328,7 @@ uint32_t Wheel(byte WheelPos)
     WheelPos -= 170;
     return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
   }
+  
 }
 
 void Vu2() /// OK
@@ -600,7 +1375,7 @@ void Vu2() /// OK
     }
     else
     {
-      uint32_t color = Wheel(map(i, 0, N_PIXELS_HALF - 1, 30, 150));
+      uint32_t color = Wheel(map(i, 0, N_PIXELS_HALF - 25, 25, 25));
       strip.setPixelColor(N_PIXELS_HALF - i - 1, color);
       strip.setPixelColor(N_PIXELS_HALF + i, color);
     }
@@ -609,7 +1384,7 @@ void Vu2() /// OK
   // Draw peak dot
   if (peak > 0 && peak <= N_PIXELS_HALF - 1)
   {
-    uint32_t color = Wheel(map(peak, 0, N_PIXELS_HALF - 1, 30, 150));
+    uint32_t color = Wheel(map(peak, 0, N_PIXELS_HALF - 25, 25, 25));
     strip.setPixelColor(N_PIXELS_HALF - peak - 1, color);
     strip.setPixelColor(N_PIXELS_HALF + peak, color);
   }
